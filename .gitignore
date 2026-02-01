@@ -38,3 +38,4 @@ coverage/
 # Screenshots and test outputs
 test-*.png
 *.png
+debug-*.js

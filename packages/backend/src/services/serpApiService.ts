@@ -1,26 +1,35 @@
 import { getJson } from 'serpapi';
 import { Flight, CMH, getAirport } from '@swa-flight-finder/shared';
 
+interface SerpApiFlightLeg {
+  departure_airport?: { id?: string; name?: string; time?: string };
+  arrival_airport?: { id?: string; name?: string; time?: string };
+  duration?: number; // minutes
+  airline?: string;
+  airline_logo?: string;
+  travel_class?: string;
+  flight_number?: string;
+  legroom?: string;
+  extensions?: string[];
+  airplane?: string;
+}
+
+interface SerpApiBestFlight {
+  flights: SerpApiFlightLeg[]; // Array of flight legs (e.g., layovers)
+  layovers?: Array<{ duration?: number; name?: string; id?: string }>;
+  total_duration?: number;
+  price?: number;
+  type?: string;
+  airline_logo?: string;
+  carbon_emissions?: any;
+  extensions?: string[];
+  booking_token?: string;
+  overnight?: boolean;
+}
+
 interface SerpApiFlightResult {
-  flights?: Array<{
-    departure_airport?: { id?: string; name?: string };
-    arrival_airport?: { id?: string; name?: string };
-    departure_token?: string;
-    price?: number;
-    airline?: string;
-    airline_logo?: string;
-    travel_class?: string;
-    flight_number?: string;
-    legroom?: string;
-    extensions?: string[];
-    overnight?: boolean;
-    duration?: number; // minutes
-    stops?: number;
-    departure_time?: string;
-    arrival_time?: string;
-    departure_date?: string;
-    arrival_date?: string;
-  }>;
+  best_flights?: SerpApiBestFlight[];
+  other_flights?: SerpApiBestFlight[];
   search_metadata?: {
     created_at?: string;
     status?: string;
@@ -93,27 +102,48 @@ async function searchFlightsByDestination(
 
     const response = await getJson(params) as SerpApiFlightResult;
 
-    if (!response.flights || response.flights.length === 0) {
+    // Combine best_flights and other_flights arrays
+    const allFlightOptions = [
+      ...(response.best_flights || []),
+      ...(response.other_flights || []),
+    ];
+
+    if (allFlightOptions.length === 0) {
       console.log(`  ✗ No flights found for ${destination}`);
       return [];
     }
 
-    // Filter for Southwest Airlines only
-    const southwestFlights = response.flights.filter(flight => {
-      const airline = flight.airline?.toLowerCase() || '';
-      return airline.includes('southwest');
+    console.log(`  → Found ${allFlightOptions.length} flight options for ${destination}`);
+
+    // DEBUG: Log all unique airlines in the response
+    const allLegs = allFlightOptions.flatMap(option => option.flights || []);
+    const uniqueAirlines = new Set(allLegs.map(f => f.airline).filter(Boolean));
+    console.log(`  → Airlines in response: ${Array.from(uniqueAirlines).join(', ')}`);
+
+    // Filter for Southwest Airlines flights
+    // A flight option is Southwest if ANY of its legs are Southwest
+    const southwestFlightOptions = allFlightOptions.filter(option => {
+      return (option.flights || []).some(leg => {
+        const airline = leg.airline?.toLowerCase() || '';
+        const flightNumber = leg.flight_number?.toLowerCase() || '';
+
+        // Check for Southwest in airline name or WN in flight number
+        return airline.includes('southwest') ||
+               airline.includes('wn') ||
+               flightNumber.startsWith('wn');
+      });
     });
 
-    if (southwestFlights.length === 0) {
-      console.log(`  ✗ No Southwest flights to ${destination}`);
+    if (southwestFlightOptions.length === 0) {
+      console.log(`  ✗ No Southwest flights to ${destination} (checked ${allFlightOptions.length} options)`);
       return [];
     }
 
-    console.log(`  ✓ Found ${southwestFlights.length} Southwest flights to ${destination}`);
+    console.log(`  ✓ Found ${southwestFlightOptions.length} Southwest flight options to ${destination}`);
 
     // Convert to our Flight format
-    const flights = southwestFlights.map((flight, index) =>
-      convertSerpApiFlightToFlight(flight, origin, destination, date, index)
+    const flights = southwestFlightOptions.map((flightOption, index) =>
+      convertSerpApiFlightToFlight(flightOption, origin, destination, date, index)
     ).filter(f => f !== null) as Flight[];
 
     return flights;
@@ -124,10 +154,10 @@ async function searchFlightsByDestination(
 }
 
 /**
- * Convert SerpAPI flight result to our Flight type
+ * Convert SerpAPI flight option to our Flight type
  */
 function convertSerpApiFlightToFlight(
-  serpFlight: any,
+  flightOption: SerpApiBestFlight,
   originCode: string,
   destCode: string,
   searchDate: string,
@@ -143,34 +173,45 @@ function convertSerpApiFlightToFlight(
     }
 
     // Extract price (convert from dollars to cents)
-    const price = serpFlight.price ? Math.round(serpFlight.price * 100) : 0;
+    const price = flightOption.price ? Math.round(flightOption.price * 100) : 0;
 
-    // Parse times
-    const departureTime = serpFlight.departure_time || '00:00';
-    const arrivalTime = serpFlight.arrival_time || '00:00';
+    // Get first and last legs for departure/arrival info
+    const firstLeg = flightOption.flights?.[0];
+    const lastLeg = flightOption.flights?.[flightOption.flights.length - 1];
 
-    // Use search date as departure date (SerpAPI sometimes doesn't return explicit dates)
-    const departureDate = searchDate;
-
-    // Calculate arrival date (handle overnight flights)
-    let arrivalDate = searchDate;
-    if (serpFlight.overnight) {
-      const nextDay = new Date(searchDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-      arrivalDate = nextDay.toISOString().split('T')[0];
+    if (!firstLeg || !lastLeg) {
+      console.warn('Flight option has no legs');
+      return null;
     }
 
+    // Parse departure time from first leg
+    const departureTimeStr = firstLeg.departure_airport?.time || '';
+    const departureTime = departureTimeStr.split(' ')[1] || '00:00';
+
+    // Parse arrival time from last leg
+    const arrivalTimeStr = lastLeg.arrival_airport?.time || '';
+    const arrivalTime = arrivalTimeStr.split(' ')[1] || '00:00';
+
+    // Extract dates from timestamps
+    const departureDate = departureTimeStr.split(' ')[0] || searchDate;
+    const arrivalDate = arrivalTimeStr.split(' ')[0] || searchDate;
+
     // Extract duration (in minutes)
-    const duration = serpFlight.duration || 120;
+    const duration = flightOption.total_duration || 120;
 
-    // Extract flight number
-    const flightNumber = serpFlight.flight_number || 'WN XXXX';
+    // Build flight number from all Southwest legs
+    const southwestLegs = flightOption.flights.filter(leg => {
+      const airline = leg.airline?.toLowerCase() || '';
+      return airline.includes('southwest') || airline.includes('wn');
+    });
 
-    // Number of stops
-    const stops = serpFlight.stops || 0;
+    const flightNumber = southwestLegs.map(leg => leg.flight_number).join(', ') || 'WN XXXX';
+
+    // Number of stops (layovers)
+    const stops = (flightOption.layovers || []).length;
 
     const flight: Flight = {
-      id: `${destCode}-${searchDate}-${index}`,
+      id: `serpapi-${destCode}-${searchDate}-${index}`,
       flightNumber,
       origin,
       destination,
@@ -183,6 +224,7 @@ function convertSerpApiFlightToFlight(
       stops,
       isDeal: false, // Will be calculated later
       dealScore: 0,
+      source: 'serpapi',
     };
 
     return flight;

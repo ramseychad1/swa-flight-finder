@@ -1,14 +1,13 @@
-// import puppeteer, { Browser, Page } from 'puppeteer'; // Not used in mock mode
+import puppeteer, { Browser, Page } from 'puppeteer';
 import { Flight, CMH, getAirport } from '@swa-flight-finder/shared';
 
-// let browserInstance: Browser | null = null; // Not used in mock mode
-// const browserInstance: any = null; // Not used in mock mode
+let browserInstance: Browser | null = null;
 
 /**
  * Get or create a browser instance (singleton pattern)
- * COMMENTED OUT - Not used in mock mode
+ * DISABLED - Not used while scraper is disabled
  */
-/*
+// @ts-ignore - Temporarily disabled
 async function getBrowser(): Promise<Browser> {
   if (!browserInstance || !browserInstance.connected) {
     console.log('🌐 Launching browser for Southwest scraping...');
@@ -18,114 +17,78 @@ async function getBrowser(): Promise<Browser> {
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-blink-features=AutomationControlled',
+        '--disable-web-security',
+        '--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       ],
     });
   }
   return browserInstance;
 }
-*/
 
 /**
  * Scrape Southwest.com for Wanna Get Away fares
- * TEMPORARY: Using mock data for testing consolidation
+ * CURRENTLY DISABLED: SerpAPI provides sufficient Southwest flight data
+ * TODO: Re-enable when Southwest Low Fare Calendar structure is updated
  */
 export async function scrapeSouthwestFlights(
   origin: string,
   dateFrom: string,
   dateTo: string
 ): Promise<Flight[]> {
-  console.log(`✈️  Southwest scraper (MOCK MODE) for ${origin} flights (${dateFrom} to ${dateTo})`);
+  console.log(`✈️  Southwest scraper DISABLED for ${origin} flights (${dateFrom} to ${dateTo})`);
+  console.log(`  → Using SerpAPI for Southwest flights (scraper will be re-enabled later)`);
 
-  // Skip actual browser automation for now - just generate mock data
-  // This lets us test the consolidation logic
-  const destinations = ['LAS', 'MCO', 'LAX', 'DEN', 'BWI'];
+  // Return empty array - scraper is disabled
+  // SerpAPI provides sufficient Southwest flight coverage
+  return [];
+
+  /* DISABLED CODE - Puppeteer scraping
+  const destinations = ['LAS', 'MCO', 'LAX', 'DEN', 'BWI', 'FLL', 'PHX', 'SAN', 'SEA'];
   const allFlights: Flight[] = [];
 
-  for (const destCode of destinations) {
-    try {
-      const flights = await generateMockSouthwestFlights(origin, destCode, dateFrom, dateTo);
-      allFlights.push(...flights);
-      console.log(`  ✓ Generated ${flights.length} mock Southwest flights to ${destCode}`);
-    } catch (error) {
-      console.log(`  ✗ Error generating flights for ${destCode}:`, error instanceof Error ? error.message : 'Unknown');
+  let browser: Browser | null = null;
+  let page: Page | null = null;
+
+  try {
+    browser = await getBrowser();
+    page = await browser.newPage();
+
+    // Set viewport and user agent
+    await page.setViewport({ width: 1920, height: 1080 });
+    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+
+    for (const destCode of destinations) {
+      try {
+        const flights = await scrapeDestination(page, origin, destCode, dateFrom, dateTo);
+        allFlights.push(...flights);
+        console.log(`  ✓ Scraped ${flights.length} Southwest flights to ${destCode}`);
+      } catch (error) {
+        console.log(`  ✗ Error scraping ${destCode}:`, error instanceof Error ? error.message : 'Unknown');
+      }
     }
+
+    await page.close();
+  } catch (error) {
+    console.error('❌ Error in Southwest scraper:', error);
+    if (page) await page.close().catch(() => {});
   }
 
   return allFlights;
-}
-
-/**
- * Generate mock Southwest flights for testing
- */
-async function generateMockSouthwestFlights(
-  origin: string,
-  destination: string,
-  dateFrom: string,
-  _dateTo: string
-): Promise<Flight[]> {
-  const originAirport = origin === 'CMH' ? CMH : getAirport(origin);
-  const destAirport = getAirport(destination);
-
-  if (!originAirport || !destAirport) {
-    return [];
-  }
-
-  // Generate 2 mock "Wanna Get Away" flights with lower prices
-  const mockFlights: Flight[] = [];
-  const baseDate = new Date(dateFrom);
-
-  for (let i = 0; i < 2; i++) {
-    const date = new Date(baseDate);
-    date.setDate(date.getDate() + i);
-    const dateStr = date.toISOString().split('T')[0];
-
-    // Generate cheaper "Wanna Get Away" fare (typically $70-$120)
-    const basePrice = Math.floor(Math.random() * 5000) + 7000; // $70-$120
-    const departureHour = 6 + Math.floor(Math.random() * 14);
-    const departureMinute = ['00', '15', '30', '45'][Math.floor(Math.random() * 4)];
-    const departureTime = `${departureHour.toString().padStart(2, '0')}:${departureMinute}`;
-
-    const arrivalHour = departureHour + 2 + Math.floor(Math.random() * 2);
-    const arrivalTime = `${arrivalHour.toString().padStart(2, '0')}:${departureMinute}`;
-
-    const flight: Flight = {
-      id: `southwest-${destination}-${dateStr}-${i}`,
-      flightNumber: `WN ${2000 + Math.floor(Math.random() * 3000)}`,
-      origin: originAirport,
-      destination: destAirport,
-      departureDate: dateStr,
-      departureTime,
-      arrivalDate: dateStr,
-      arrivalTime,
-      price: basePrice,
-      duration: 120 + Math.floor(Math.random() * 60),
-      stops: 0,
-      isDeal: false, // Will be calculated later
-      source: 'southwest',
-      fareClass: 'Wanna Get Away',
-    };
-
-    mockFlights.push(flight);
-  }
-
-  return mockFlights;
+  */
 }
 
 /**
  * Scrape flights for a specific destination
- * COMMENTED OUT - Not used in mock mode
+ * DISABLED - Not used while scraper is disabled
  */
-/*
+// @ts-ignore - Temporarily disabled
 async function scrapeDestination(
   page: Page,
   origin: string,
   destination: string,
   dateFrom: string,
-  _dateTo: string
+  dateTo: string
 ): Promise<Flight[]> {
-  // Skip actual scraping for now and return mock flights for testing
-  console.log(`  → Generating mock Southwest flights for ${destination}`);
-
   const originAirport = origin === 'CMH' ? CMH : getAirport(origin);
   const destAirport = getAirport(destination);
 
@@ -133,65 +96,158 @@ async function scrapeDestination(
     return [];
   }
 
-  // Generate 2-3 mock "Wanna Get Away" flights with lower prices
-  const mockFlights: Flight[] = [];
-  const baseDate = new Date(dateFrom);
+  try {
+    // Navigate to Southwest Low Fare Calendar
+    const url = `https://www.southwest.com/air/low-fare-calendar/index.html?originationAirportCode=${origin}&destinationAirportCode=${destination}&startDate=${dateFrom}&endDate=${dateTo}&tripType=oneway`;
 
-  for (let i = 0; i < 2; i++) {
-    const date = new Date(baseDate);
-    date.setDate(date.getDate() + i);
-    const dateStr = date.toISOString().split('T')[0];
+    console.log(`  → Navigating to Southwest Low Fare Calendar: ${origin} to ${destination}`);
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
 
-    // Generate cheaper "Wanna Get Away" fare
-    const basePrice = Math.floor(Math.random() * 5000) + 7000; // $70-$120
-    const departureTime = `${6 + Math.floor(Math.random() * 14)}:${['00', '15', '30', '45'][Math.floor(Math.random() * 4)]}`;
+    // Wait for page to fully load
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
-    const flight: Flight = {
-      id: `southwest-${destination}-${dateStr}-${i}`,
-      flightNumber: `WN ${2000 + Math.floor(Math.random() * 3000)}`,
-      origin: originAirport,
-      destination: destAirport,
-      departureDate: dateStr,
-      departureTime,
-      arrivalDate: dateStr,
-      arrivalTime: `${parseInt(departureTime.split(':')[0]) + 2}:${departureTime.split(':')[1]}`,
-      price: basePrice,
-      duration: 120,
-      stops: 0,
-      isDeal: false, // Will be calculated later
-      source: 'southwest',
-      fareClass: 'Wanna Get Away',
-    };
+    // Look for and click the search button if it exists
+    try {
+      const searchButtonSelectors = [
+        'button[type="submit"]',
+        'button:has-text("Search")',
+        '.search-flights-button',
+        '[class*="submit"]',
+      ];
 
-    mockFlights.push(flight);
+      for (const selector of searchButtonSelectors) {
+        const button = await page.$(selector);
+        if (button) {
+          console.log(`    → Clicking search button`);
+          await button.click();
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          break;
+        }
+      }
+    } catch (error) {
+      console.log('    ⚠️  Could not find/click search button');
+    }
+
+    // Wait for calendar or results to load
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
+    // Extract flight data from the calendar with flexible selectors
+    const flights: any[] = await page.evaluate(() => {
+      // This function runs in browser context, so document is available
+      const doc = (globalThis as any).document;
+      const flightData: any[] = [];
+
+      // Try multiple selector strategies
+      const possibleSelectors = [
+        '.calendar-day',
+        '[data-date]',
+        '[class*="day"]',
+        '[class*="fare"]',
+        '[class*="price"]',
+      ];
+
+      let dayElements: any[] = [];
+      for (const selector of possibleSelectors) {
+        const elements = doc.querySelectorAll(selector);
+        if (elements.length > 0) {
+          dayElements = Array.from(elements);
+          break;
+        }
+      }
+
+      // If we found potential day elements, try to extract data
+      dayElements.forEach((element: any) => {
+        try {
+          // Try to find date
+          const dateAttr = element.getAttribute('data-date') ||
+                          element.getAttribute('data-day') ||
+                          element.getAttribute('aria-label');
+
+          // Try to find price in various ways
+          const priceSelectors = [
+            '.price',
+            '[class*="price"]',
+            '[class*="fare"]',
+            '[class*="amount"]',
+          ];
+
+          let priceText = '';
+          for (const sel of priceSelectors) {
+            const priceEl = element.querySelector(sel);
+            if (priceEl) {
+              priceText = priceEl.textContent || '';
+              break;
+            }
+          }
+
+          // If no price in child, check element text itself
+          if (!priceText) {
+            priceText = element.textContent || '';
+          }
+
+          // Extract numeric price
+          const priceMatch = priceText.match(/\$?(\d+)/);
+          if (priceMatch && dateAttr) {
+            const price = parseInt(priceMatch[1], 10) * 100;
+
+            flightData.push({
+              date: dateAttr,
+              price: price,
+            });
+          }
+        } catch (error) {
+          // Skip invalid entries
+        }
+      });
+
+      return flightData;
+    });
+
+    // Convert scraped data to Flight objects
+    const result: Flight[] = flights.map((data: any, index: number) => {
+      const departureHour = 8 + Math.floor(Math.random() * 10);
+      const departureMinute = ['00', '15', '30', '45'][Math.floor(Math.random() * 4)];
+      const departureTime = `${departureHour.toString().padStart(2, '0')}:${departureMinute}`;
+
+      const duration = 120 + Math.floor(Math.random() * 120);
+      const arrivalHour = departureHour + Math.floor(duration / 60);
+      const arrivalTime = `${arrivalHour.toString().padStart(2, '0')}:${departureMinute}`;
+
+      return {
+        id: `southwest-${destination}-${data.date}-${index}`,
+        flightNumber: `WN ${2000 + Math.floor(Math.random() * 3000)}`,
+        origin: originAirport,
+        destination: destAirport,
+        departureDate: data.date,
+        departureTime,
+        arrivalDate: data.date,
+        arrivalTime,
+        price: data.price,
+        duration,
+        stops: 0,
+        isDeal: false,
+        source: 'southwest',
+        fareClass: 'Wanna Get Away',
+      };
+    });
+
+    // Small delay between requests to be respectful
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    return result;
+  } catch (error) {
+    console.error(`    ✗ Error scraping ${destination}:`, error instanceof Error ? error.message : 'Unknown');
+    return [];
   }
-
-  return mockFlights;
 }
-*/
 
 /**
  * Close browser instance
- * COMMENTED OUT - Not used in mock mode
  */
 export async function closeBrowser(): Promise<void> {
-  // Not used in mock mode
-  // if (browserInstance) {
-  //   await browserInstance.close();
-  //   browserInstance = null;
-  //   console.log('🔒 Browser closed');
-  // }
+  if (browserInstance) {
+    await browserInstance.close();
+    browserInstance = null;
+    console.log('🔒 Browser closed');
+  }
 }
-
-/**
- * Parse Southwest Low Fare Calendar results
- * This would extract flight data from the results page
- * TODO: Implement actual parsing
- */
-/*
-async function parseFlightResults(page: Page, _origin: string, _destination: string): Promise<Flight[]> {
-  const flights: Flight[] = [];
-  await page.evaluate(() => []);
-  return flights;
-}
-*/

@@ -33,6 +33,70 @@ app.get('/api/health', (_req: Request, res: Response<HealthResponse>) => {
   });
 });
 
+// Debug endpoint to see raw SerpAPI response
+app.get('/api/debug-serpapi', async (req: Request, res: Response) => {
+  try {
+    const { getJson } = await import('serpapi');
+    const SERPAPI_KEY = process.env.SERPAPI_KEY;
+
+    if (!SERPAPI_KEY) {
+      return res.status(500).json({ error: 'SerpAPI key not configured' });
+    }
+
+    // Use date 10 days from now to ensure future flights
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 10);
+    const dateStr = futureDate.toISOString().split('T')[0];
+
+    const params = {
+      engine: 'google_flights',
+      departure_id: 'CMH',
+      arrival_id: req.query.destination || 'LAS',
+      outbound_date: req.query.date || dateStr,
+      type: '2', // One-way
+      currency: 'USD',
+      hl: 'en',
+      api_key: SERPAPI_KEY,
+    };
+
+    console.log('\n🔍 DEBUG: SerpAPI Request Parameters:', JSON.stringify(params, null, 2));
+
+    const response = await getJson(params);
+
+    console.log('\n📦 DEBUG: Raw SerpAPI Response:');
+    console.log('  - search_metadata:', response.search_metadata);
+    console.log('  - flights array length:', response.flights?.length || 0);
+
+    if (response.flights && response.flights.length > 0) {
+      console.log('\n✈️  DEBUG: First 3 flights:');
+      response.flights.slice(0, 3).forEach((flight: any, i: number) => {
+        console.log(`\n  Flight ${i + 1}:`);
+        console.log('    - airline:', flight.airline);
+        console.log('    - airline_logo:', flight.airline_logo);
+        console.log('    - flight_number:', flight.flight_number);
+        console.log('    - price:', flight.price);
+        console.log('    - departure_airport:', flight.departure_airport);
+        console.log('    - arrival_airport:', flight.arrival_airport);
+        console.log('    - All fields:', Object.keys(flight));
+      });
+    }
+
+    res.json({
+      request_params: params,
+      response_metadata: response.search_metadata,
+      total_flights: response.flights?.length || 0,
+      flights: response.flights || [],
+      raw_response: response,
+    });
+  } catch (error) {
+    console.error('❌ DEBUG: Error calling SerpAPI:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Unknown error',
+      details: error,
+    });
+  }
+});
+
 // Flight search endpoint
 app.get('/api/flights', async (req: Request, res: Response) => {
   try {
