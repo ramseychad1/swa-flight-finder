@@ -1,0 +1,32 @@
+{
+  "name": "swa-flight-finder",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Southwest Airlines flight finder from Columbus (CMH)",
+  "scripts": {
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "dev": "concurrently \"pnpm dev:backend\" \"pnpm dev:frontend\"",
+    "build": "pnpm -r build",
+    "start": "node packages/backend/dist/index.js",
+    "test": "pnpm -r test",
+    "type-check": "pnpm -r type-check"
+  },
+  "keywords": [
+    "southwest",
+    "flights",
+    "travel",
+    "cmh"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "puppeteer": "^24.36.1",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

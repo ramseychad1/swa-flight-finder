@@ -1,0 +1,142 @@
+[
+  {
+    "destination": "LAS",
+    "basePrice": 15900,
+    "duration": 270,
+    "distance": 1740,
+    "frequency": "daily"
+  },
+  {
+    "destination": "LAX",
+    "basePrice": 18900,
+    "duration": 300,
+    "distance": 2010,
+    "frequency": "daily"
+  },
+  {
+    "destination": "DEN",
+    "basePrice": 13900,
+    "duration": 180,
+    "distance": 1150,
+    "frequency": "daily"
+  },
+  {
+    "destination": "PHX",
+    "basePrice": 16900,
+    "duration": 255,
+    "distance": 1630,
+    "frequency": "daily"
+  },
+  {
+    "destination": "MCO",
+    "basePrice": 14900,
+    "duration": 150,
+    "distance": 890,
+    "frequency": "daily"
+  },
+  {
+    "destination": "FLL",
+    "basePrice": 15900,
+    "duration": 165,
+    "distance": 1020,
+    "frequency": "daily"
+  },
+  {
+    "destination": "SAN",
+    "basePrice": 19900,
+    "duration": 285,
+    "distance": 1950,
+    "frequency": "daily"
+  },
+  {
+    "destination": "SEA",
+    "basePrice": 22900,
+    "duration": 270,
+    "distance": 2020,
+    "frequency": "daily"
+  },
+  {
+    "destination": "PDX",
+    "basePrice": 23900,
+    "duration": 285,
+    "distance": 2080,
+    "frequency": "daily"
+  },
+  {
+    "destination": "AUS",
+    "basePrice": 17900,
+    "duration": 180,
+    "distance": 1120,
+    "frequency": "daily"
+  },
+  {
+    "destination": "DCA",
+    "basePrice": 11900,
+    "duration": 90,
+    "distance": 365,
+    "frequency": "daily"
+  },
+  {
+    "destination": "BWI",
+    "basePrice": 10900,
+    "duration": 85,
+    "distance": 340,
+    "frequency": "daily"
+  },
+  {
+    "destination": "MDW",
+    "basePrice": 9900,
+    "duration": 75,
+    "distance": 290,
+    "frequency": "daily"
+  },
+  {
+    "destination": "DAL",
+    "basePrice": 16900,
+    "duration": 165,
+    "distance": 1020,
+    "frequency": "daily"
+  },
+  {
+    "destination": "HOU",
+    "basePrice": 17900,
+    "duration": 180,
+    "distance": 1070,
+    "frequency": "daily"
+  },
+  {
+    "destination": "MSY",
+    "basePrice": 16900,
+    "duration": 150,
+    "distance": 860,
+    "frequency": "daily"
+  },
+  {
+    "destination": "SJC",
+    "basePrice": 20900,
+    "duration": 300,
+    "distance": 2070,
+    "frequency": "daily"
+  },
+  {
+    "destination": "OAK",
+    "basePrice": 19900,
+    "duration": 295,
+    "distance": 2050,
+    "frequency": "daily"
+  },
+  {
+    "destination": "BNA",
+    "basePrice": 12900,
+    "duration": 90,
+    "distance": 360,
+    "frequency": "daily"
+  },
+  {
+    "destination": "TPA",
+    "basePrice": 14900,
+    "duration": 155,
+    "distance": 910,
+    "frequency": "daily"
+  }
+]
