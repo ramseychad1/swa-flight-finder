@@ -9,7 +9,7 @@ import { flightCache } from './cacheService.js';
  * Interface for flight data providers
  */
 export interface IFlightDataProvider {
-  searchFlights(origin: string, from: string, to: string): Promise<{
+  searchFlights(origin: string, from: string, to: string, destinations?: string[]): Promise<{
     flights: Flight[];
     cached: boolean;
     timestamp?: number;
@@ -20,13 +20,13 @@ export interface IFlightDataProvider {
  * Mock data provider (uses generated data)
  */
 class MockFlightProvider implements IFlightDataProvider {
-  async searchFlights(_origin: string, from: string, to: string): Promise<{
+  async searchFlights(_origin: string, from: string, to: string, destinations?: string[]): Promise<{
     flights: Flight[];
     cached: boolean;
     timestamp?: number;
   }> {
     console.log('🎭 Using MOCK data provider');
-    const flights = generateFlights(from, to);
+    const flights = generateFlights(from, to, destinations);
     return {
       flights,
       cached: false,
@@ -38,14 +38,18 @@ class MockFlightProvider implements IFlightDataProvider {
  * Live data provider (uses SerpAPI Google Flights)
  */
 class LiveFlightProvider implements IFlightDataProvider {
-  async searchFlights(origin: string, from: string, to: string): Promise<{
+  async searchFlights(origin: string, from: string, to: string, destinations?: string[]): Promise<{
     flights: Flight[];
     cached: boolean;
     timestamp?: number;
   }> {
     console.log('🌐 Using LIVE data provider (SerpAPI)');
+    if (destinations && destinations.length > 0) {
+      console.log(`  → Searching ${destinations.length} selected destinations: ${destinations.join(', ')}`);
+    }
 
     // Check cache first
+    // Note: Cache key currently doesn't include destinations, so cached results may include all destinations
     const cachedFlights = flightCache.get(origin, from, to);
     if (cachedFlights) {
       const metadata = flightCache.getMetadata(origin, from, to);
@@ -60,7 +64,7 @@ class LiveFlightProvider implements IFlightDataProvider {
     try {
       // For now, search just the start date to conserve API credits
       // Future enhancement: search multiple dates in the range
-      const flights = await searchRealFlights(origin, from, to);
+      const flights = await searchRealFlights(origin, from, to, destinations);
 
       // Calculate deal scores
       const flightsWithDeals = calculateDealScores(flights);
@@ -78,7 +82,7 @@ class LiveFlightProvider implements IFlightDataProvider {
 
       // Fallback to mock data if API fails
       console.log('⚠️  Falling back to mock data');
-      const mockFlights = generateFlights(from, to);
+      const mockFlights = generateFlights(from, to, destinations);
       return {
         flights: mockFlights,
         cached: false,
@@ -91,12 +95,15 @@ class LiveFlightProvider implements IFlightDataProvider {
  * Hybrid data provider (uses both SerpAPI and Southwest scraping)
  */
 class HybridFlightProvider implements IFlightDataProvider {
-  async searchFlights(origin: string, from: string, to: string): Promise<{
+  async searchFlights(origin: string, from: string, to: string, destinations?: string[]): Promise<{
     flights: Flight[];
     cached: boolean;
     timestamp?: number;
   }> {
     console.log('🔀 Using HYBRID data provider (SerpAPI + Southwest scraping)');
+    if (destinations && destinations.length > 0) {
+      console.log(`  → Searching ${destinations.length} selected destinations: ${destinations.join(', ')}`);
+    }
 
     // Check cache first
     const cachedFlights = flightCache.get(origin, from, to);
@@ -114,7 +121,7 @@ class HybridFlightProvider implements IFlightDataProvider {
       console.log('🔄 Querying both SerpAPI and Southwest.com in parallel...');
 
       const [serpApiFlights, southwestFlights] = await Promise.allSettled([
-        searchRealFlights(origin, from, to).catch(err => {
+        searchRealFlights(origin, from, to, destinations).catch(err => {
           console.log('⚠️  SerpAPI query failed:', err.message);
           return [];
         }),

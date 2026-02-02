@@ -1,5 +1,7 @@
 import { useState, FormEvent } from 'react';
 import type { SearchParams } from '@swa-flight-finder/shared';
+import { DEFAULT_DESTINATIONS } from '@swa-flight-finder/shared';
+import { DestinationSelector } from './DestinationSelector';
 
 interface SearchFormProps {
   onSearch: (params: SearchParams) => void;
@@ -11,6 +13,7 @@ export function SearchForm({ onSearch, isLoading }: SearchFormProps) {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [sortBy, setSortBy] = useState<'price' | 'destination' | 'date'>('price');
+  const [selectedDestinations, setSelectedDestinations] = useState<string[]>(DEFAULT_DESTINATIONS);
 
   // Set default dates (tomorrow and 2 weeks from now)
   const getDefaultDates = () => {
@@ -46,11 +49,17 @@ export function SearchForm({ onSearch, isLoading }: SearchFormProps) {
       return;
     }
 
+    if (selectedDestinations.length === 0) {
+      alert('Please select at least one destination');
+      return;
+    }
+
     onSearch({
       origin,
       from: fromDate,
       to: toDate,
-      sortBy
+      sortBy,
+      destinations: selectedDestinations
     });
   };
 
@@ -104,6 +113,14 @@ export function SearchForm({ onSearch, isLoading }: SearchFormProps) {
             <option value="date">Date (Earliest First)</option>
           </select>
         </div>
+      </div>
+
+      {/* Destination Selector */}
+      <div className="mb-4">
+        <DestinationSelector
+          selected={selectedDestinations}
+          onChange={setSelectedDestinations}
+        />
       </div>
 
       <button

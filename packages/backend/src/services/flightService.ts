@@ -18,7 +18,8 @@ export async function searchFlights(params: SearchParams): Promise<FlightSearchR
   const { flights: allFlights, cached, timestamp } = await getDataProvider().searchFlights(
     params.origin || 'CMH',
     params.from,
-    params.to
+    params.to,
+    params.destinations
   );
 
   // Filter by origin (if specified and not CMH)

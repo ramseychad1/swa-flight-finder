@@ -4,9 +4,15 @@ import routesData from '../data/routes.json' with { type: 'json' };
 /**
  * Generates mock flights for a given date range
  */
-export function generateFlights(fromDate: string, toDate: string): Flight[] {
+export function generateFlights(fromDate: string, toDate: string, destinations?: string[]): Flight[] {
   const flights: Flight[] = [];
-  const routes = routesData as RouteData[];
+  let routes = routesData as RouteData[];
+
+  // Filter routes by selected destinations if provided
+  if (destinations && destinations.length > 0) {
+    routes = routes.filter(route => destinations.includes(route.destination));
+    console.log(`  → Mock data: Generating flights for ${routes.length} selected destinations`);
+  }
 
   const start = new Date(fromDate);
   const end = new Date(toDate);

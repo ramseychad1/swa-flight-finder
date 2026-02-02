@@ -43,7 +43,8 @@ interface SerpApiFlightResult {
 export async function searchRealFlights(
   origin: string,
   dateFrom: string,
-  dateTo: string
+  dateTo: string,
+  selectedDestinations?: string[]
 ): Promise<Flight[]> {
   const SERPAPI_KEY = process.env.SERPAPI_KEY;
 
@@ -55,8 +56,10 @@ export async function searchRealFlights(
 
   const allFlights: Flight[] = [];
 
-  // Get all possible destinations from our airport list
-  const destinations = getDestinationsFromAirports();
+  // Get destinations to search (use provided list or default to all)
+  const destinations = selectedDestinations && selectedDestinations.length > 0
+    ? selectedDestinations
+    : getDestinationsFromAirports();
 
   // Search each destination individually (more reliable than multi-destination)
   // Note: We'll search the start date for each destination to get current pricing

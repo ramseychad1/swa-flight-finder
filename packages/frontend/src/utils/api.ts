@@ -13,6 +13,10 @@ export async function searchFlights(params: SearchParams): Promise<FlightSearchR
     queryParams.append('sortBy', params.sortBy);
   }
 
+  if (params.destinations && params.destinations.length > 0) {
+    queryParams.append('destinations', params.destinations.join(','));
+  }
+
   const response = await fetch(`${API_BASE_URL}/flights?${queryParams}`);
 
   if (!response.ok) {

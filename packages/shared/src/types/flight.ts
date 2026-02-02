@@ -28,6 +28,7 @@ export interface SearchParams {
   from: string;                // Start date YYYY-MM-DD
   to: string;                  // End date YYYY-MM-DD
   sortBy?: 'price' | 'destination' | 'date';
+  destinations?: string[];     // Optional: specific destinations to search (airport codes)
 }
 
 export interface RouteData {

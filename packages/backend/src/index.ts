@@ -169,11 +169,22 @@ app.get('/api/debug-serpapi', async (req: Request, res: Response) => {
 // Flight search endpoint
 app.get('/api/flights', async (req: Request, res: Response) => {
   try {
+    // Parse destinations (can be comma-separated string or array)
+    let destinations: string[] | undefined;
+    if (req.query.destinations) {
+      if (typeof req.query.destinations === 'string') {
+        destinations = req.query.destinations.split(',').filter(d => d.trim());
+      } else if (Array.isArray(req.query.destinations)) {
+        destinations = req.query.destinations as string[];
+      }
+    }
+
     const params: Partial<SearchParams> = {
       origin: req.query.origin as string,
       from: req.query.from as string,
       to: req.query.to as string,
-      sortBy: req.query.sortBy as 'price' | 'destination' | 'date' | undefined
+      sortBy: req.query.sortBy as 'price' | 'destination' | 'date' | undefined,
+      destinations
     };
 
     // Validate parameters
