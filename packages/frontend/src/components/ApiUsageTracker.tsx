@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
 interface ApiUsageData {
   plan: string;
   monthlyLimit: number;
@@ -18,7 +20,7 @@ export function ApiUsageTracker() {
   const fetchUsage = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3000/api/serpapi-usage');
+      const response = await fetch(`${API_BASE_URL}/serpapi-usage`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch API usage');
