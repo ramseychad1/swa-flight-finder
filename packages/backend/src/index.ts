@@ -33,6 +33,36 @@ app.get('/api/health', (_req: Request, res: Response<HealthResponse>) => {
   });
 });
 
+// SerpAPI account usage endpoint
+app.get('/api/serpapi-usage', async (_req: Request, res: Response) => {
+  try {
+    const { getSerpApiAccountInfo, calculateUsagePercentage } = await import('./services/serpApiAccountService.js');
+    const accountInfo = await getSerpApiAccountInfo();
+
+    if (!accountInfo) {
+      return res.status(500).json({
+        error: 'Unable to fetch SerpAPI account information'
+      });
+    }
+
+    res.json({
+      plan: accountInfo.plan_name,
+      monthlyLimit: accountInfo.searches_per_month,
+      usedThisMonth: accountInfo.this_month_usage,
+      remaining: accountInfo.total_searches_left,
+      usagePercentage: calculateUsagePercentage(accountInfo),
+      hourlyRateLimit: accountInfo.account_rate_limit_per_hour,
+      lastHourUsage: accountInfo.last_hour_searches,
+    });
+  } catch (error) {
+    console.error('❌ Error in /api/serpapi-usage:', error);
+    res.status(500).json({
+      error: 'Failed to fetch account usage',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // Debug endpoint to see raw SerpAPI response
 app.get('/api/debug-serpapi', async (req: Request, res: Response) => {
   try {

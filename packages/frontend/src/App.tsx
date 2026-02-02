@@ -3,6 +3,7 @@ import type { SearchParams } from '@swa-flight-finder/shared';
 import { SearchForm } from './components/SearchForm';
 import { FlightList } from './components/FlightList';
 import { LoadingSpinner } from './components/LoadingSpinner';
+import { ApiUsageTracker } from './components/ApiUsageTracker';
 import { useFlights } from './hooks/useFlights';
 
 function App() {
@@ -24,6 +25,11 @@ function App() {
             Discover the best low-fare flights from Columbus (CMH)
           </p>
         </header>
+
+        {/* API Usage Tracker */}
+        <div className="mb-6">
+          <ApiUsageTracker />
+        </div>
 
         <SearchForm onSearch={handleSearch} isLoading={isLoading} />
 
