@@ -63,6 +63,45 @@ app.get('/api/serpapi-usage', async (_req: Request, res: Response) => {
   }
 });
 
+// Cache stats endpoint (for debugging)
+app.get('/api/cache-stats', async (_req: Request, res: Response) => {
+  try {
+    const { flightCache } = await import('./services/cacheService.js');
+    const stats = flightCache.getStats();
+
+    res.json({
+      cacheSize: stats.size,
+      cachedKeys: stats.entries,
+      ttl: '6 hours',
+    });
+  } catch (error) {
+    console.error('❌ Error in /api/cache-stats:', error);
+    res.status(500).json({
+      error: 'Failed to fetch cache stats',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Clear cache endpoint (for debugging)
+app.post('/api/clear-cache', async (_req: Request, res: Response) => {
+  try {
+    const { flightCache } = await import('./services/cacheService.js');
+    flightCache.clear();
+
+    res.json({
+      success: true,
+      message: 'Cache cleared successfully'
+    });
+  } catch (error) {
+    console.error('❌ Error in /api/clear-cache:', error);
+    res.status(500).json({
+      error: 'Failed to clear cache',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // Debug endpoint to see raw SerpAPI response
 app.get('/api/debug-serpapi', async (req: Request, res: Response) => {
   try {
