@@ -8,10 +8,12 @@ import { useFlights } from './hooks/useFlights';
 
 function App() {
   const [searchParams, setSearchParams] = useState<SearchParams | null>(null);
-  const { data, isLoading, error } = useFlights(searchParams);
+  const [searchId, setSearchId] = useState<number>(0);
+  const { data, isLoading, error } = useFlights(searchParams, searchId);
 
   const handleSearch = (params: SearchParams) => {
     setSearchParams(params);
+    setSearchId(prev => prev + 1); // Force new query
   };
 
   return (
