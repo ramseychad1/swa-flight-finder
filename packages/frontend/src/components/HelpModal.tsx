@@ -55,7 +55,7 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
 
             {/* Destinations */}
             <section className="mb-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-3">20 Destinations Searched</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">15 Destinations Searched</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-2">East Coast & Midwest</h4>
@@ -67,34 +67,24 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">South</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">South & Texas</h4>
                   <ul className="space-y-1">
                     <li>• Orlando (MCO)</li>
                     <li>• Fort Lauderdale (FLL)</li>
                     <li>• Tampa (TPA)</li>
-                    <li>• New Orleans (MSY)</li>
                     <li>• Dallas (DAL)</li>
                     <li>• Houston (HOU)</li>
                     <li>• Austin (AUS)</li>
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Mountain</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">Mountain & West</h4>
                   <ul className="space-y-1">
                     <li>• Denver (DEN)</li>
                     <li>• Phoenix (PHX)</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">West Coast</h4>
-                  <ul className="space-y-1">
                     <li>• Las Vegas (LAS)</li>
                     <li>• Los Angeles (LAX)</li>
                     <li>• San Diego (SAN)</li>
-                    <li>• San Jose (SJC)</li>
-                    <li>• Oakland (OAK)</li>
-                    <li>• Seattle (SEA)</li>
-                    <li>• Portland (PDX)</li>
                   </ul>
                 </div>
               </div>
@@ -129,8 +119,8 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
                   Each search uses ~15 API calls (we have 250/month)
                 </p>
                 <p className="leading-relaxed">
-                  When you search, the app queries all 20 destinations. This consumes approximately
-                  15 SerpAPI calls per search.
+                  When you search, the app queries 15 popular destinations. This consumes approximately
+                  15 SerpAPI calls per search (one per destination).
                 </p>
                 <div className="bg-white rounded p-3 mt-3">
                   <p className="font-semibold mb-2">Tips to conserve API calls:</p>
