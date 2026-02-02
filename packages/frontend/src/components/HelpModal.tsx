@@ -1,5 +1,3 @@
-import { Fragment } from 'react';
-
 interface HelpModalProps {
   isOpen: boolean;
   onClose: () => void;
