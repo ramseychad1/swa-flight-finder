@@ -26,6 +26,9 @@ export function FlightCard({ flight }: FlightCardProps) {
           <div className="text-2xl font-bold text-swa-blue">
             {formatPrice(flight.price)}
           </div>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Excludes taxes & fees
+          </p>
           {flight.isDeal && (
             <span className="inline-block mt-1 px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">
               Great Deal!

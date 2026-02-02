@@ -51,7 +51,18 @@ export function FlightList({ flights, totalResults, cheapestPrice, cached, times
           <div className="text-right">
             <p className="text-sm opacity-80">Cheapest Flight</p>
             <p className="text-2xl font-bold">{formatPrice(cheapestPrice)}</p>
+            <p className="text-xs opacity-60 mt-1">Excludes taxes & fees</p>
           </div>
+        </div>
+
+        {/* Price disclaimer */}
+        <div className="mb-3 pb-3 border-b border-white/20">
+          <p className="text-white/80 text-sm flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Prices shown do not include taxes and fees. Final price will be higher at checkout.</span>
+          </p>
         </div>
 
         {/* Data source and cache info */}
