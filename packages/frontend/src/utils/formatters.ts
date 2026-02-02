@@ -13,7 +13,9 @@ export function formatPrice(cents: number): string {
  * @returns Formatted date (e.g., "Mar 15")
  */
 export function formatDate(dateString: string): string {
-  const date = new Date(dateString);
+  // Parse YYYY-MM-DD manually to avoid timezone issues
+  const [year, month, day] = dateString.split('-').map(Number);
+  const date = new Date(year, month - 1, day); // month is 0-indexed
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
@@ -23,7 +25,9 @@ export function formatDate(dateString: string): string {
  * @returns Formatted date (e.g., "Friday, March 15, 2024")
  */
 export function formatFullDate(dateString: string): string {
-  const date = new Date(dateString);
+  // Parse YYYY-MM-DD manually to avoid timezone issues
+  const [year, month, day] = dateString.split('-').map(Number);
+  const date = new Date(year, month - 1, day); // month is 0-indexed
   return date.toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
